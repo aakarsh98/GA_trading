@@ -1,9 +1,0 @@
-{
-  "entry_momentum_threshold": 30.195089370325622,
-  "entry_rsi_threshold": 30.0,
-  "exit_momentum_threshold": 75.69790841563835,
-  "trailing_stop_pct": 9.692459588185558,
-  "position_size_pct": 80.0,
-  "min_hold_bars": 19,
-  "max_hold_bars": 105
-}

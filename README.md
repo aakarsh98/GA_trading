@@ -27,31 +27,49 @@ Set up your data provider credentials (Alpaca or Binance) in environment variabl
 
 ```bash
 # Quick test with robust genetic algorithm
-python test_robust_ga_quick.py
+python tests/test_robust_ga_quick.py
 
 # Full genetic algorithm optimization
-python genetic_algo_robust.py
+python src/strategies/genetic_algo_robust.py
 
 # Long-term strategy optimization
-python genetic_algo_longterm.py
+python src/strategies/genetic_algo_longterm.py
 ```
 
 ## Project Structure
 
 ```
 .
-├── genetic_algo_*.py          # Various GA implementations
-├── ga_*.py                    # Multi-timeframe GA variants
-├── test_*.py                  # Testing scripts
-├── *_data_provider.py         # Data provider integrations
+├── src/                       # Source code
+│   ├── strategies/           # Genetic algorithm implementations
+│   │   ├── genetic_algo_robust.py
+│   │   ├── genetic_algo_unrestricted.py
+│   │   ├── genetic_algo_longterm.py
+│   │   ├── ga_multitimeframe_*.py
+│   │   └── ...
+│   ├── data_providers/       # Data provider integrations
+│   │   └── binance_data_provider.py
+│   └── utils/                # Utility functions
+├── tests/                     # Test suite
+│   ├── test_*.py             # Unit tests
+│   └── run_*_tests.py        # Test runners
+├── scripts/                   # Analysis and utility scripts
+│   ├── analyze_*.py          # Analysis tools
+│   ├── compare_*.py          # Comparison scripts
+│   └── run_robust_ga_comparison.py
+├── examples/                  # Example implementations
+│   ├── finrl_momentum_example.py
+│   └── train_momentum_ai.py
 ├── python_testing/            # Advanced testing framework
 │   ├── indicators/           # Custom indicators
 │   ├── strategy/             # Strategy engine
 │   └── data/                 # Data collection utilities
-└── requirements.txt
+└── README.md
 ```
 
 ## Available GA Implementations
+
+All located in `src/strategies/`:
 
 - **`genetic_algo_robust.py`** - Conservative, anti-overfitting approach
 - **`genetic_algo_unrestricted.py`** - Maximum flexibility for discovery
@@ -64,13 +82,13 @@ python genetic_algo_longterm.py
 
 ```bash
 # Test data connection
-python test_alpaca_connection.py
+python tests/test_alpaca_connection.py
 
 # Quick GA test
-python test_robust_ga_quick.py
+python tests/test_robust_ga_quick.py
 
 # Comprehensive testing
-python run_all_research_tests.py
+python tests/run_all_research_tests.py
 ```
 
 ## Advanced Features
@@ -88,7 +106,10 @@ Located in `python_testing/`, includes:
 
 ```bash
 # Train momentum-based AI agent
-python train_momentum_ai.py
+python examples/train_momentum_ai.py
+
+# FinRL momentum example
+python examples/finrl_momentum_example.py
 ```
 
 ## Configuration
@@ -100,11 +121,12 @@ Results are saved as JSON files:
 
 ## Best Practices
 
-1. Start with `test_robust_ga_quick.py` for rapid iteration
+1. Start with `tests/test_robust_ga_quick.py` for rapid iteration
 2. Use robust GA variants to avoid overfitting
 3. Always backtest on out-of-sample data
 4. Monitor Sharpe ratio and maximum drawdown
 5. Test across multiple market conditions
+6. Review analysis tools in `scripts/` for performance comparison
 
 ## Requirements
 
