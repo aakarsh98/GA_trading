@@ -1,0 +1,22 @@
+{
+  "entry_momentum_threshold": 17.648388860843298,
+  "entry_momentum_operator": "<=",
+  "entry_price_change_bars": 25,
+  "entry_price_change_pct": -2.830395972122373,
+  "entry_price_change_operator": ">=",
+  "entry_combinator": "AND",
+  "exit_momentum_threshold": 69.9882346161245,
+  "exit_momentum_operator": ">=",
+  "exit_price_change_bars": 28,
+  "exit_price_change_pct": 0.49839136157097463,
+  "exit_price_change_operator": "<",
+  "exit_combinator": "AND",
+  "position_size_pct": 100.0,
+  "stop_loss_pct": 11.612933305487811,
+  "trailing_stop": true,
+  "take_profit_enabled": true,
+  "take_profit_pct": 31.314069205189526,
+  "min_hold_bars": 25,
+  "max_hold_bars": 39,
+  "long_only": true
+}

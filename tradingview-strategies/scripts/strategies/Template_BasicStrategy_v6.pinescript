@@ -1,0 +1,101 @@
+//@version=6
+strategy("Template Basic Strategy", overlay=true, 
+         initial_capital=10000,
+         default_qty_type=strategy.percent_of_equity,
+         default_qty_value=10,
+         commission_value=0.1,
+         slippage=2)
+
+//=== USER INPUTS =============================================================================
+// Moving Average Parameters
+fast_ma_length = input.int(20, title="Fast MA Length", minval=5, maxval=100)
+slow_ma_length = input.int(50, title="Slow MA Length", minval=10, maxval=200)
+
+// Risk Management Parameters
+risk_percent = input.float(1.0, title="Risk % Per Trade", minval=0.1, maxval=5.0, step=0.1) / 100
+atr_multiplier = input.float(2.0, title="ATR Stop Loss Multiplier", minval=1.0, maxval=5.0, step=0.1)
+atr_length = input.int(14, title="ATR Length", minval=5, maxval=50)
+
+// Strategy Parameters
+use_take_profit = input.bool(true, title="Use Take Profit")
+take_profit_ratio = input.float(2.0, title="Take Profit Ratio", minval=1.0, maxval=5.0, step=0.1)
+
+//=== INDICATORS ==========================================================================
+// Calculate Moving Averages
+fast_ma = ta.ema(close, fast_ma_length)
+slow_ma = ta.ema(close, slow_ma_length)
+
+// Calculate ATR for dynamic stop loss
+atr_value = ta.atr(atr_length)
+
+//=== STRATEGY LOGIC ======================================================================
+// Entry Conditions
+long_condition = ta.crossover(fast_ma, slow_ma) and fast_ma > fast_ma[1] and slow_ma > slow_ma[1]
+short_condition = ta.crossunder(fast_ma, slow_ma) and fast_ma < fast_ma[1] and slow_ma < slow_ma[1]
+
+//=== RISK MANAGEMENT =====================================================================
+// Calculate position size based on risk percentage
+calculatePositionSize() =>
+    current_equity = strategy.netprofit + strategy.initial_capital
+    risk_amount = current_equity * risk_percent
+    stop_distance = atr_value * atr_multiplier
+    position_size = risk_amount / stop_distance
+    position_size
+
+// Entry and Exit Execution
+if long_condition and strategy.opentrades == 0
+    position_size_value = calculatePositionSize()
+    stop_loss_price = close - (atr_value * atr_multiplier)
+    take_profit_price = use_take_profit ? close + (atr_value * atr_multiplier * take_profit_ratio) : na
+    
+    strategy.entry("Long", strategy.long, qty=position_size_value)
+    strategy.exit("Exit Long", from_entry="Long", stop=stop_loss_price, limit=take_profit_price)
+
+if short_condition and strategy.opentrades == 0
+    position_size_value = calculatePositionSize()
+    stop_loss_price = close + (atr_value * atr_multiplier)
+    take_profit_price = use_take_profit ? close - (atr_value * atr_multiplier * take_profit_ratio) : na
+    
+    strategy.entry("Short", strategy.short, qty=position_size_value)
+    strategy.exit("Exit Short", from_entry="Short", stop=stop_loss_price, limit=take_profit_price)
+
+// Additional exit conditions (crossunder)
+if strategy.position_size > 0 and ta.crossunder(fast_ma, slow_ma)
+    strategy.close("Long", comment="Exit on MA crossunder")
+
+if strategy.position_size < 0 and ta.crossover(fast_ma, slow_ma)
+    strategy.close("Short", comment="Exit on MA crossover")
+
+//=== VISUALIZATION =======================================================================
+// Plot Moving Averages
+plot(fast_ma, color=color.new(color.blue, 0), linewidth=2, title="Fast MA")
+plot(slow_ma, color=color.new(color.red, 0), linewidth=2, title="Slow MA")
+
+// Plot Entry Signals
+plotshape(long_condition ? low : na, shape.labelup, location.belowbar, color=color.new(color.green, 0), style=label.circle, size=size.small, title="Long Signal")
+plotshape(short_condition ? high : na, shape.labeldown, location.abovebar, color=color.new(color.red, 0), style=label.circle, size=size.small, title="Short Signal")
+
+// Performance Tracking
+eq_plot = plot(strategy.netprofit, color=color.new(color.purple, 0), linewidth=2, title="Equity Curve")
+hline(0, "Breakeven", color=color.gray, linestyle=hline.style_dashed)
+
+//=== ALERT CONDITIONS =======================================================================
+alertcondition(long_condition, title="Long Entry Signal", message="Long entry signal: {{ticker}} at {{close}}")
+alertcondition(short_condition, title="Short Entry Signal", message="Short entry signal: {{ticker}} at {{close}}")
+alertcondition(strategy.position_size > 0 and ta.crossunder(fast_ma, slow_ma), title="Exit Long Signal", message="Exit long position: {{ticker}}")
+alertcondition(strategy.position_size < 0 and ta.crossover(fast_ma, slow_ma), title="Exit Short Signal", message="Exit short position: {{ticker}}")
+
+//=== STRATEGY INFORMATION ==================================================================
+// Display strategy information on chart
+var label info_label = na
+if barstate.islast
+    info_text = "Strategy: " + str.tostring(strategy.netprofit, "#.##" + close) + "\n" +
+                "Trades: " + str.tostring(strategy.closedtrades) + "\n" +
+                "Win Rate: " + str.tostring(strategy.wintrades / strategy.closedtrades * 100, "#.##") + "%"
+    
+    if na(info_label)
+        info_label := label.new(bar_index, high, info_text, style=label.style_label_down, 
+                               color=color.new(color.white, 80), textcolor=color.black, size=size.small)
+    else
+        label.set_text(info_label, info_text)
+        label.set_y(info_label, high)
